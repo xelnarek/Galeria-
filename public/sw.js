@@ -11,7 +11,10 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn('Cache addAll error:', err);
+        // Continue anyway - not all assets may be available during first install
+      });
     })
   );
   self.skipWaiting();
@@ -45,7 +48,10 @@ self.addEventListener('fetch', (event) => {
     url.pathname.endsWith('.svg') ||
     url.pathname.endsWith('.png') ||
     url.pathname.endsWith('.jpg') ||
-    url.hostname === 'images.unsplash.com'
+    url.pathname.endsWith('.jpeg') ||
+    url.pathname.endsWith('.webp') ||
+    url.hostname === 'images.unsplash.com' ||
+    url.hostname === 'picsum.photos'
   ) {
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) => {
@@ -73,6 +79,30 @@ self.addEventListener('fetch', (event) => {
         return caches.match(event.request).then((response) => {
           return response || caches.match('/');
         });
+      })
+    );
+    return;
+  }
+
+  // Cache-first for JS/CSS with network fallback
+  if (
+    event.request.destination === 'script' ||
+    event.request.destination === 'style'
+  ) {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return (
+          response ||
+          fetch(event.request).then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const cacheCopy = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, cacheCopy);
+              });
+            }
+            return networkResponse;
+          })
+        );
       })
     );
     return;
