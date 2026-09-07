@@ -35,5 +35,34 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'maskable',
       },
     ],
+    screenshots: [
+      {
+        src: '/pwa-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        form_factor: 'narrow',
+      },
+      {
+        src: '/pwa-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        form_factor: 'wide',
+      },
+    ],
+    shortcuts: [
+      {
+        name: 'Galeria Główna',
+        short_name: 'Galeria',
+        description: 'Otwórz główną galerię obrazów',
+        url: '/',
+        icons: [
+          {
+            src: '/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+        ],
+      },
+    ],
   };
 }
