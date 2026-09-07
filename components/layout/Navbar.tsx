@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { artistData } from '@/data/gallery-data';
 import { AmbientSound } from '@/components/audio/AmbientSound';
@@ -19,16 +19,37 @@ export const Navbar: React.FC<NavbarProps> = ({
   favoritesCount = 0,
   artistName,
 }) => {
+  const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const displayName = artistName || artistData.name;
   const { canInstall, showInstallPrompt, isInstalled } = usePWAInstall();
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
+      const currentScrollY = window.scrollY;
+
+      setIsScrolled(currentScrollY > 40);
+
+      // Smart auto-hide: hide navbar when scrolling down, show when scrolling up
+      if (currentScrollY > 90) {
+        if (currentScrollY > lastScrollY.current + 8) {
+          // Scrolling down -> hide navbar
+          setIsVisible(false);
+        } else if (currentScrollY < lastScrollY.current - 8) {
+          // Scrolling up -> show navbar
+          setIsVisible(true);
+        }
+      } else {
+        // At the very top of page -> always show
+        setIsVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
     };
-    window.addEventListener('scroll', handleScroll);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -38,9 +59,13 @@ export const Navbar: React.FC<NavbarProps> = ({
     <>
       <header
         id="main-navigation-header"
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 transform ${
+          isVisible || mobileMenuOpen
+            ? 'translate-y-0 opacity-100'
+            : '-translate-y-full opacity-0 pointer-events-none'
+        } ${
           isScrolled
-            ? 'bg-[#0B0B0B]/90 backdrop-blur-md border-b border-[#2A2927] py-3.5'
+            ? 'bg-[#0B0B0B]/90 backdrop-blur-md border-b border-[#2A2927] py-3.5 shadow-lg'
             : 'bg-transparent py-5'
         }`}
       >
