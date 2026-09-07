@@ -37,15 +37,21 @@ export const ArtistSection: React.FC<ArtistSectionProps> = ({
           {/* Portrait of the Artist (Cinematic B&W, natural texture) */}
           <div className="lg:col-span-5">
             <div className="relative border border-[#2A2927] p-2.5 sm:p-3.5 bg-[#111111] shadow-2xl">
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#0B0B0B]">
+              <div
+                className="relative aspect-[4/5] w-full overflow-hidden bg-[#0B0B0B]"
+                suppressHydrationWarning
+              >
                 <Image
                   src={currentArtist.portrait}
                   alt={currentArtist.name}
                   fill
+                  unoptimized
                   sizes="(max-width: 768px) 100vw, 500px"
                   className="object-cover grayscale contrast-110 hover:grayscale-0 transition-all duration-1000 ease-out"
                   referrerPolicy="no-referrer"
+                  suppressHydrationWarning
                 />
+
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0B]/80 via-transparent to-transparent pointer-events-none" />
                 <div className="absolute bottom-4 left-4 right-4">
                   <p className="font-serif-luxury text-xl text-[#F2F0EA] font-light">

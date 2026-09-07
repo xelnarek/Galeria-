@@ -81,8 +81,7 @@ export default async function ArtworkPage({ params }: PageProps) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      >{JSON.stringify(jsonLd)}</script>
       <ArtworkClientView artwork={artwork} allArtworks={artworksData} />
     </>
   );

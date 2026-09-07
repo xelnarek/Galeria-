@@ -69,16 +69,21 @@ export const HeroExhibition: React.FC<HeroExhibitionProps> = ({
 
             {/* Canvas Mount: Minimalist 1px border, 0px radius */}
             <div className="relative border border-[#2A2927] p-2 sm:p-3.5 bg-[#111111] shadow-2xl">
-              <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] overflow-hidden bg-[#0B0B0B]">
+              <div
+                className="relative w-full aspect-[4/3] sm:aspect-[16/11] overflow-hidden bg-[#0B0B0B]"
+                suppressHydrationWarning
+              >
                 <Image
                   src={featuredArtwork.image}
                   alt={featuredArtwork.title}
                   fill
                   priority
+                  unoptimized
                   quality={95}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 900px"
                   className="object-contain transition-opacity duration-1000"
                   referrerPolicy="no-referrer"
+                  suppressHydrationWarning
                 />
               </div>
 

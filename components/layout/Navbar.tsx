@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { artistData } from '@/data/gallery-data';
-import { AmbientSound } from '@/components/audio/AmbientSound';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { useIsMounted } from '@/hooks/useIsMounted';
 import { Heart, Menu, X, Eye, Download } from 'lucide-react';
 
 interface NavbarProps {
@@ -19,11 +19,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   favoritesCount = 0,
   artistName,
 }) => {
+  const isMounted = useIsMounted();
   const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const displayName = artistName || artistData.name;
-  const { canInstall, showInstallPrompt, isInstalled } = usePWAInstall();
+  const { canInstall, showInstallPrompt } = usePWAInstall();
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -114,14 +115,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="text-[10px] text-[#C5A880] font-mono">04</span>
               <span>O kolekcji</span>
             </Link>
-            <Link
-              href="/studio"
-              className="hover:text-[#C5A880] transition-colors py-1 flex items-center gap-1.5 group text-[#C5A880]/80"
-              title="Przejdź do Studia Kuratora"
-            >
-              <span className="text-[10px] text-[#C5A880] font-mono">05</span>
-              <span>Studio</span>
-            </Link>
 
             {/* Exhibition CTA */}
             {onOpenExhibition && (
@@ -137,7 +130,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Subtle Controls */}
             <div className="flex items-center gap-3 pl-3 border-l border-[#2A2927]">
-              {canInstall && (
+              {isMounted && canInstall && (
                 <button
                   onClick={showInstallPrompt}
                   className="p-1.5 text-[#AAA69D] hover:text-[#C5A880] transition-colors"
@@ -146,8 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Download className="w-3.5 h-3.5" />
                 </button>
               )}
-              <AmbientSound />
-              {favoritesCount > 0 && (
+              {isMounted && favoritesCount > 0 && (
                 <Link
                   href="#kolekcja"
                   className="inline-flex items-center gap-1.5 text-xs text-[#C5A880] hover:text-white transition-colors"
@@ -250,19 +242,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   O kolekcji
                 </span>
               </Link>
-
-              <Link
-                href="/studio"
-                onClick={closeMenu}
-                className="group flex items-baseline gap-4 text-left pt-2 border-t border-[#2A2927]/60"
-              >
-                <span className="text-sm font-mono text-[#C5A880] tracking-wider">
-                  05
-                </span>
-                <span className="font-serif-luxury text-2xl sm:text-3xl text-[#C5A880] group-hover:text-white transition-colors font-light">
-                  Studio Kuratora
-                </span>
-              </Link>
             </nav>
 
             {onOpenExhibition && (
@@ -283,7 +262,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Bottom utilities in mobile menu */}
           <div className="border-t border-[#2A2927] pt-5 flex flex-col gap-4">
-            {canInstall && (
+            {isMounted && canInstall && (
               <button
                 onClick={showInstallPrompt}
                 className="w-full flex items-center justify-between border border-[#C5A880]/40 bg-[#161616]/40 px-4 py-2.5 rounded-lg text-[#AAA69D] hover:text-[#F2F0EA] transition-all"
@@ -299,10 +278,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[#AAA69D]">Tło dźwiękowe:</span>
-              <AmbientSound />
-            </div>
             <p className="text-[11px] text-[#777] tracking-wider text-center pt-1 font-serif-luxury italic">
               Prywatna wystawa sztuki — stworzone z miłością dla ojca
             </p>

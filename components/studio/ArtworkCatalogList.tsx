@@ -206,6 +206,7 @@ export const ArtworkCatalogList: React.FC<ArtworkCatalogListProps> = ({
                         src={artwork.thumbnail || artwork.image}
                         alt={artwork.title}
                         fill
+                        unoptimized
                         className="object-cover"
                         referrerPolicy="no-referrer"
                       />

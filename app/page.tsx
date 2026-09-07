@@ -18,6 +18,9 @@ import { CloseUpDetails } from '@/components/viewer/CloseUpDetails';
 import { ExhibitionMode } from '@/components/exhibition/ExhibitionMode';
 import { OfflineIndicator } from '@/components/pwa/OfflineIndicator';
 import { PWARegister } from '@/components/pwa/PWARegister';
+import { MuseumIntroPreloader } from '@/components/home/MuseumIntroPreloader';
+import { MuseumAudioPlayer } from '@/components/audio/MuseumAudioPlayer';
+import { MuseumCursor } from '@/components/ui/MuseumCursor';
 
 export default function HomePage() {
   const { artworks, artist, collection } = useGalleryData({ forStudio: false });
@@ -44,13 +47,10 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0B0B] text-[#F2F0EA] selection:bg-[#2A2927] selection:text-[#F2F0EA]">
-      {/* Service Worker Auto-Registration */}
-      <PWARegister />
-
-      {/* Offline Status Badge */}
-      <OfflineIndicator />
-
+    <div
+      className="min-h-screen bg-[#0B0B0B] text-[#F2F0EA] selection:bg-[#2A2927] selection:text-[#F2F0EA] group/museum"
+      suppressHydrationWarning
+    >
       {/* Main Top Navigation */}
       <Navbar
         onOpenExhibition={() => setIsExhibitionOpen(true)}
@@ -92,7 +92,19 @@ export default function HomePage() {
       {/* Footer with Catalog Credits */}
       <Footer />
 
+      {/* Museum Experience Elements & Floating Docks */}
+      <MuseumCursor />
+      <MuseumAudioPlayer />
+      <MuseumIntroPreloader artist={artist} />
+
+      {/* Service Worker Auto-Registration */}
+      <PWARegister />
+
+      {/* Offline Status Badge */}
+      <OfflineIndicator />
+
       {/* DEDICATED ARTWORK VIEW */}
+
       {selectedArtwork && (
         <ArtworkModalOrView
           artwork={selectedArtwork}

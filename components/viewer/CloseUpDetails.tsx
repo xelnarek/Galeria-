@@ -53,6 +53,7 @@ export const CloseUpDetails: React.FC<CloseUpDetailsProps> = ({
               src={artwork.image}
               alt={artwork.title}
               fill
+              unoptimized
               sizes="(max-width: 768px) 100vw, 600px"
               className="object-contain"
               referrerPolicy="no-referrer"
@@ -83,6 +84,7 @@ export const CloseUpDetails: React.FC<CloseUpDetailsProps> = ({
                     src={detail.image}
                     alt={detail.title}
                     fill
+                    unoptimized
                     sizes="(max-width: 768px) 100vw, 600px"
                     className="object-cover hover:scale-105 transition-transform duration-700"
                     referrerPolicy="no-referrer"

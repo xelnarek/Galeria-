@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'motion/react';
 import { Artwork } from '@/types/gallery';
 import { X, ChevronLeft, ChevronRight, Info } from 'lucide-react';
 
@@ -11,6 +12,8 @@ interface ArtworkFullscreenProps {
   onPrevious: () => void;
   onNext: () => void;
 }
+
+const MUSEUM_EASE = [0.22, 1, 0.36, 1] as const;
 
 export const ArtworkFullscreen: React.FC<ArtworkFullscreenProps> = ({
   artwork,
@@ -55,26 +58,42 @@ export const ArtworkFullscreen: React.FC<ArtworkFullscreenProps> = ({
   }, [onClose, onPrevious, onNext, resetControlsTimeout]);
 
   return (
-    <div
+    <motion.div
       id="artwork-fullscreen-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5, ease: MUSEUM_EASE }}
       className="fixed inset-0 z-50 bg-[#0B0B0B] flex items-center justify-center cursor-default overflow-hidden"
       onMouseMove={resetControlsTimeout}
       onTouchStart={resetControlsTimeout}
       onClick={resetControlsTimeout}
     >
-      {/* Immersive Image Display */}
-      <div className="relative w-screen h-screen flex items-center justify-center p-3 sm:p-6">
-        <div className="relative w-full h-full max-w-6xl max-h-[92vh]">
-          <Image
-            src={artwork.image}
-            alt={artwork.title}
-            fill
-            priority
-            quality={95}
-            sizes="100vw"
-            className="object-contain transition-opacity duration-700 select-none pointer-events-none"
-            referrerPolicy="no-referrer"
-          />
+      {/* Immersive Image Display with Paced Crossfade */}
+      <div className="relative w-screen h-screen flex items-center justify-center p-2 sm:p-6 lg:p-8">
+        <div className="relative w-full h-full max-w-[94vw] max-h-[92vh]">
+          <AnimatePresence initial={false} mode="wait">
+            <motion.div
+              key={artwork.id}
+              initial={{ opacity: 0, scale: 0.985 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.01 }}
+              transition={{ duration: 0.8, ease: MUSEUM_EASE }}
+              className="relative w-full h-full"
+            >
+              <Image
+                src={artwork.image}
+                alt={artwork.title}
+                fill
+                priority
+                unoptimized
+                quality={98}
+                sizes="100vw"
+                className="object-contain select-none pointer-events-none"
+                referrerPolicy="no-referrer"
+              />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
@@ -147,18 +166,27 @@ export const ArtworkFullscreen: React.FC<ArtworkFullscreenProps> = ({
 
         {/* Bottom Artwork Info Plaque */}
         <div className="pointer-events-auto flex justify-center">
-          {showInfo && (
-            <div className="bg-[#111111]/85 backdrop-blur-md border border-[#2A2927] px-6 py-3 max-w-md text-center animate-fade-in shadow-2xl">
-              <h4 className="font-serif-luxury text-lg text-[#F2F0EA]">
-                {artwork.title}
-              </h4>
-              <p className="text-[11px] text-[#AAA69D] mt-0.5 tracking-wider">
-                {artwork.year} • {artwork.medium} ({artwork.width} × {artwork.height} cm)
-              </p>
-            </div>
-          )}
+          <AnimatePresence>
+            {showInfo && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.4, ease: MUSEUM_EASE }}
+                className="bg-[#111111]/85 backdrop-blur-md border border-[#2A2927] px-6 py-3 max-w-md text-center shadow-2xl"
+              >
+                <h4 className="font-serif-luxury text-lg text-[#F2F0EA]">
+                  {artwork.title}
+                </h4>
+                <p className="text-[11px] text-[#AAA69D] mt-0.5 tracking-wider font-mono">
+                  {artwork.year} • {artwork.medium.replace(/\s*\[.*?\]/, '')} ({artwork.width} × {artwork.height} cm)
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
+

@@ -106,3 +106,10 @@
   background-color: #F2F0EA;
 }
 
+
+/* Global Museum Cursor override (for non-touch devices) */
+@media (pointer: fine) {
+  .group\/museum, .group\/museum * {
+    cursor: none !important;
+  }
+}

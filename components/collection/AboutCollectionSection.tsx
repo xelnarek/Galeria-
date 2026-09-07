@@ -60,8 +60,8 @@ export const AboutCollectionSection: React.FC<AboutCollectionSectionProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-[#2A2927]">
-            <div className="pt-4 md:pt-0 md:px-6 first:pl-0">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 divide-y sm:divide-y-0 sm:divide-x divide-[#2A2927]">
+            <div className="pt-4 sm:pt-0 sm:px-6 first:pl-0">
               <span className="font-serif-luxury text-4xl sm:text-5xl text-[#F2F0EA] font-light block">
                 {totalArtworks}
               </span>
@@ -73,7 +73,7 @@ export const AboutCollectionSection: React.FC<AboutCollectionSectionProps> = ({
               </p>
             </div>
 
-            <div className="pt-4 md:pt-0 md:px-6">
+            <div className="pt-4 sm:pt-0 sm:px-6">
               <span className="font-serif-luxury text-4xl sm:text-5xl text-[#F2F0EA] font-light block">
                 {minYear}–{maxYear}
               </span>
@@ -81,11 +81,11 @@ export const AboutCollectionSection: React.FC<AboutCollectionSectionProps> = ({
                 Przedział chronologiczny
               </span>
               <p className="text-xs text-[#AAA69D] mt-2 font-light">
-                Okres intensywnej pracy warsztatowej i plenerowej
+                Okres pracy warsztatowej i plenerowej
               </p>
             </div>
 
-            <div className="pt-4 md:pt-0 md:px-6">
+            <div className="pt-4 sm:pt-0 sm:px-6">
               <span className="font-serif-luxury text-4xl sm:text-5xl text-[#F2F0EA] font-light block">
                 {categories.length}
               </span>
@@ -94,18 +94,6 @@ export const AboutCollectionSection: React.FC<AboutCollectionSectionProps> = ({
               </span>
               <p className="text-xs text-[#AAA69D] mt-2 font-light">
                 {categories.join(', ')}
-              </p>
-            </div>
-
-            <div className="pt-4 md:pt-0 md:px-6">
-              <span className="font-serif-luxury text-4xl sm:text-5xl text-[#C5A880] font-light block">
-                100%
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-[#C5A880] block mt-1">
-                Autentyczność
-              </span>
-              <p className="text-xs text-[#AAA69D] mt-2 font-light">
-                Malarstwo olejne sztalugowe na płótnie
               </p>
             </div>
           </div>

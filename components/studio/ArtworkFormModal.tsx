@@ -289,6 +289,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                       src={image}
                       alt="Podgląd dzieła"
                       fill
+                      unoptimized
                       className="object-contain"
                       referrerPolicy="no-referrer"
                     />
@@ -673,6 +674,7 @@ export const ArtworkFormModal: React.FC<ArtworkFormModalProps> = ({
                             src={detail.image}
                             alt={detail.title}
                             fill
+                            unoptimized
                             className="object-cover"
                             referrerPolicy="no-referrer"
                           />

@@ -280,14 +280,19 @@ export const EditorialGallery: React.FC<EditorialGalleryProps> = ({
 
                     {/* Canvas Container */}
                     <div className="relative border border-[#2A2927] p-2.5 bg-[#111111] group-hover:border-[#C5A880] transition-colors shadow-2xl">
-                      <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#0B0B0B]">
+                      <div
+                        className="relative w-full aspect-[4/3] overflow-hidden bg-[#0B0B0B]"
+                        suppressHydrationWarning
+                      >
                         <Image
                           src={art.image}
                           alt={art.title}
                           fill
+                          unoptimized
                           sizes="400px"
                           className="object-contain transition-transform duration-700 group-hover:scale-[1.02]"
                           referrerPolicy="no-referrer"
+                          suppressHydrationWarning
                         />
                       </div>
 
@@ -570,11 +575,13 @@ const ArtworkCardItem: React.FC<ArtworkCardItemProps> = ({
           className={`relative w-full overflow-hidden bg-[#0B0B0B] ${
             large ? 'aspect-[4/3] sm:aspect-[16/11]' : 'aspect-[4/3] sm:aspect-[4/3]'
           }`}
+          suppressHydrationWarning
         >
           <Image
             src={artwork.image}
             alt={artwork.title}
             fill
+            unoptimized
             sizes={
               large
                 ? '(max-width: 768px) 100vw, 900px'
@@ -582,6 +589,7 @@ const ArtworkCardItem: React.FC<ArtworkCardItemProps> = ({
             }
             className="object-contain transition-transform duration-700 ease-out group-hover:scale-[1.015]"
             referrerPolicy="no-referrer"
+            suppressHydrationWarning
           />
         </div>
       </div>

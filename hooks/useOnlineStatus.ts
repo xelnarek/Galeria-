@@ -11,16 +11,16 @@ function subscribe(callback: () => void) {
   };
 }
 
-function getClientSnapshot(): boolean {
-  return typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean'
-    ? navigator.onLine
-    : true;
+function getSnapshot(): boolean {
+  return typeof navigator !== 'undefined' ? navigator.onLine : true;
 }
 
 function getServerSnapshot(): boolean {
   return true;
 }
 
-export function useOnlineStatus() {
-  return useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
+export function useOnlineStatus(): boolean {
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
+
+

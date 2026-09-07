@@ -92,6 +92,7 @@ export const ArtworkPreviewModal: React.FC<ArtworkPreviewModalProps> = ({
                       src={artwork.image}
                       alt={artwork.title}
                       fill
+                      unoptimized
                       className="object-contain"
                       referrerPolicy="no-referrer"
                     />
@@ -165,6 +166,7 @@ export const ArtworkPreviewModal: React.FC<ArtworkPreviewModalProps> = ({
                               src={det.image}
                               alt={det.title}
                               fill
+                              unoptimized
                               className="object-cover"
                               referrerPolicy="no-referrer"
                             />
@@ -197,6 +199,7 @@ export const ArtworkPreviewModal: React.FC<ArtworkPreviewModalProps> = ({
                     src={artwork.thumbnail || artwork.image}
                     alt={artwork.title}
                     fill
+                    unoptimized
                     className="object-contain"
                     referrerPolicy="no-referrer"
                   />
@@ -233,6 +236,7 @@ export const ArtworkPreviewModal: React.FC<ArtworkPreviewModalProps> = ({
                     src={artwork.image}
                     alt={artwork.title}
                     fill
+                    unoptimized
                     className="object-contain"
                     referrerPolicy="no-referrer"
                   />

@@ -1,21 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
+
+function subscribeStandalone(callback: () => void) {
+  if (typeof window === 'undefined') return () => {};
+  const mql = window.matchMedia('(display-mode: standalone)');
+  mql.addEventListener('change', callback);
+  return () => mql.removeEventListener('change', callback);
+}
+
+function getStandaloneSnapshot(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(display-mode: standalone)').matches;
+}
+
+function getIOSSnapshot(): boolean {
+  if (typeof window === 'undefined') return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as { MSStream?: unknown }).MSStream;
+}
+
+function getServerSnapshot(): boolean {
+  return false;
+}
 
 export function usePWAInstall() {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
-  const [isInstalled, setIsInstalled] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(display-mode: standalone)').matches;
-    }
-    return false;
-  });
-  const [isIOS, setIsIOS] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    }
-    return false;
-  });
+  const isInstalled = useSyncExternalStore(subscribeStandalone, getStandaloneSnapshot, getServerSnapshot);
+  const isIOS = useSyncExternalStore(() => () => {}, getIOSSnapshot, getServerSnapshot);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
@@ -27,8 +38,6 @@ export function usePWAInstall() {
 
     const handleAppInstalled = () => {
       setInstallPrompt(null);
-      setIsInstalled(true);
-      console.log('PWA was installed');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -43,18 +52,26 @@ export function usePWAInstall() {
   const install = async () => {
     if (!installPrompt) return;
 
-    installPrompt.prompt();
-    const { outcome } = await installPrompt.userChoice;
-    console.log(`User response to install prompt: ${outcome}`);
-    setInstallPrompt(null);
+    try {
+      installPrompt.prompt();
+      const { outcome } = await installPrompt.userChoice;
+      console.log(`User response to install prompt: ${outcome}`);
+    } catch {
+      // ignore
+    } finally {
+      setInstallPrompt(null);
+    }
   };
 
   return {
     isInstallable: !!installPrompt,
-    canInstall: !!installPrompt, // Keep for backward compatibility with my recent edits
+    canInstall: !!installPrompt,
     isInstalled,
     isIOS,
     install,
-    showInstallPrompt: install, // Keep for backward compatibility with my recent edits
+    showInstallPrompt: install,
   };
 }
+
+
+

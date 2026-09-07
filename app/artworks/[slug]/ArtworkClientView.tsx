@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'motion/react';
 import { Artwork } from '@/types/gallery';
 import { artistData } from '@/data/gallery-data';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useOrientation } from '@/hooks/useOrientation';
 import { ArtworkZoomViewer } from '@/components/viewer/ArtworkZoomViewer';
 import { ArtworkFullscreen } from '@/components/viewer/ArtworkFullscreen';
 import { CloseUpDetails } from '@/components/viewer/CloseUpDetails';
@@ -27,12 +29,15 @@ interface ArtworkClientViewProps {
   allArtworks: Artwork[];
 }
 
+const MUSEUM_EASE = [0.22, 1, 0.36, 1] as const;
+
 export const ArtworkClientView: React.FC<ArtworkClientViewProps> = ({
   artwork,
   allArtworks,
 }) => {
   const router = useRouter();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { isPortrait } = useOrientation();
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
@@ -124,7 +129,7 @@ export const ArtworkClientView: React.FC<ArtworkClientViewProps> = ({
             <button
               onClick={() => toggleFavorite(artwork.id)}
               className={`p-2 rounded-full border border-[#2A2927] hover:border-[#C5A880] transition-colors ${
-                isFavorite(artwork.id) ? 'text-[#C5A880] border-[#C5A880]' : 'text-[#AAA69D]'
+                isFavorite(artwork.id) ? 'text-[#C5A880] border-[#C5A880] bg-[#C5A880]/10' : 'text-[#AAA69D]'
               }`}
               title={isFavorite(artwork.id) ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'}
               aria-label="Ulubione"
@@ -136,26 +141,44 @@ export const ArtworkClientView: React.FC<ArtworkClientViewProps> = ({
       </header>
 
       {/* Main Artwork Stage */}
-      <main className="max-w-7xl mx-auto w-full px-5 sm:px-8 py-10 sm:py-16 my-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
-          {/* Left Column: Canvas Display */}
+      <main className="max-w-7xl mx-auto w-full px-5 sm:px-8 py-8 sm:py-14 my-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
+          {/* Left Column: Canvas Display with Smooth Orientation Adaptation */}
           <div className="lg:col-span-7 flex flex-col items-center">
-            <div className="relative w-full border border-[#2A2927] p-3 sm:p-4 bg-[#111111] shadow-2xl">
+            <motion.div
+              layout
+              transition={{ duration: 0.9, ease: MUSEUM_EASE }}
+              className="relative w-full border border-[#2A2927] p-2.5 sm:p-4 bg-[#111111] shadow-2xl overflow-hidden"
+            >
               <div
-                className="relative w-full aspect-[4/3] sm:aspect-[16/11] overflow-hidden bg-[#0B0B0B] cursor-zoom-in"
+                className={`relative w-full overflow-hidden bg-[#0B0B0B] cursor-zoom-in transition-all ${
+                  isPortrait ? 'aspect-[4/3] sm:aspect-[16/11]' : 'aspect-[16/10] sm:aspect-[16/11]'
+                }`}
                 onClick={() => setIsZoomOpen(true)}
                 title="Kliknij, aby przybliżyć pociągnięcia pędzla"
               >
-                <Image
-                  src={artwork.image}
-                  alt={artwork.title}
-                  fill
-                  priority
-                  quality={95}
-                  sizes="(max-width: 768px) 100vw, 800px"
-                  className="object-contain hover:scale-[1.01] transition-transform duration-500"
-                  referrerPolicy="no-referrer"
-                />
+                <AnimatePresence initial={false} mode="wait">
+                  <motion.div
+                    key={artwork.id}
+                    initial={{ opacity: 0, scale: 0.985 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.01 }}
+                    transition={{ duration: 0.9, ease: MUSEUM_EASE }}
+                    className="relative w-full h-full"
+                  >
+                    <Image
+                      src={artwork.image}
+                      alt={artwork.title}
+                      fill
+                      priority
+                      unoptimized
+                      quality={98}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 65vw, 900px"
+                      className="object-contain hover:scale-[1.01] transition-transform duration-500"
+                      referrerPolicy="no-referrer"
+                    />
+                  </motion.div>
+                </AnimatePresence>
               </div>
 
               {/* Toolbar */}
@@ -188,147 +211,159 @@ export const ArtworkClientView: React.FC<ArtworkClientViewProps> = ({
                   )}
                 </div>
 
-                <span className="text-[11px] text-[#777]">
+                <span className="text-[11px] text-[#777] font-mono">
                   {currentIndex + 1} z {allArtworks.length} dzieł
                 </span>
               </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Right Column: Metas, Stories & Detail Studies */}
-          <div className="lg:col-span-5 space-y-8">
-            {/* 1. TYTUŁ, 2. ROK, 3. TECHNIKA, 4. WYMIARY */}
-            <div className="space-y-4 border-b border-[#2A2927] pb-6">
-              <span className="text-[10px] tracking-[0.25em] uppercase text-[#C5A880]">
-                {artwork.category}
-              </span>
-
-              <div>
-                <h1 className="font-serif-luxury text-3xl sm:text-4xl lg:text-5xl text-[#F2F0EA] font-light leading-[1.12]">
-                  {artwork.title}
-                </h1>
-                <p className="text-sm text-[#AAA69D] font-light mt-1.5">
-                  {artwork.year}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-2 text-xs border-t border-[#2A2927]/60">
-                <div>
-                  <span className="text-[10px] uppercase tracking-widest text-[#777] block">
-                    Technika wykonania
+          <div className="lg:col-span-5 space-y-7">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`meta-view-${artwork.id}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.8, ease: MUSEUM_EASE }}
+                className="space-y-7"
+              >
+                {/* 1. TYTUŁ, 2. ROK, 3. TECHNIKA, 4. WYMIARY */}
+                <div className="space-y-4 border-b border-[#2A2927] pb-6">
+                  <span className="text-[10px] tracking-[0.25em] uppercase text-[#C5A880]">
+                    {artwork.category}
                   </span>
-                  <span className="text-[#F2F0EA] text-xs font-light mt-0.5 block font-serif-luxury italic">
-                    {artwork.medium.replace(/\s*\[.*?\]/, '')}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase tracking-widest text-[#777] block">
-                    Format płótna
-                  </span>
-                  <span className="text-[#F2F0EA] text-xs font-light mt-0.5 block font-mono">
-                    {artwork.width} × {artwork.height} cm
-                  </span>
-                </div>
-              </div>
-            </div>
 
-            {/* 5. O DZIELE */}
-            <div className="space-y-2.5">
-              <h2 className="text-[11px] uppercase tracking-[0.25em] text-[#C5A880] flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880]" />
-                <span>O dziele</span>
-              </h2>
-              <p className="text-sm text-[#AAA69D] leading-relaxed font-light">
-                {artwork.description}
-              </p>
-            </div>
-
-            {/* 6. HISTORIA OBRAZU */}
-            {artwork.story && (
-              <div className="space-y-4 border-t border-[#2A2927] pt-6">
-                <h2 className="text-[11px] uppercase tracking-[0.25em] text-[#C5A880] flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880]" />
-                  <span>Historia obrazu</span>
-                </h2>
-
-                {artwork.story.origin && (
-                  <div className="text-xs space-y-1">
-                    <span className="text-[#888] uppercase tracking-wider block text-[10px]">
-                      Geneza i pracownia
-                    </span>
-                    <p className="text-[#AAA69D] leading-relaxed font-light">
-                      {artwork.story.origin}
+                  <div>
+                    <h1 className="font-serif-luxury text-3xl sm:text-4xl lg:text-5xl text-[#F2F0EA] font-light leading-[1.12]">
+                      {artwork.title}
+                    </h1>
+                    <p className="text-sm text-[#AAA69D] font-light mt-1.5">
+                      {artwork.year}
                     </p>
                   </div>
-                )}
 
-                {artwork.story.meaning && (
-                  <div className="text-xs space-y-1">
-                    <span className="text-[#888] uppercase tracking-wider block text-[10px]">
-                      Kontekst artystyczny
-                    </span>
-                    <p className="text-[#AAA69D] leading-relaxed font-light">
-                      {artwork.story.meaning}
-                    </p>
-                  </div>
-                )}
-
-                {artwork.story.curatorialNote && (
-                  <div className="border-l-2 border-[#C5A880]/40 pl-3.5 py-1 mt-2 bg-[#111111]/30">
-                    <p className="font-serif-luxury text-sm italic text-[#AAA69D]">
-                      {artwork.story.curatorialNote}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* 7. DETAIL STORY (STUDIUM DETALU) */}
-            {artwork.details && artwork.details.length > 0 && (
-              <div className="space-y-6 border-t border-[#2A2927] pt-6">
-                <h2 className="text-[11px] uppercase tracking-[0.25em] text-[#C5A880] flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-                  <span>Studium detalu • Analiza kuratorska</span>
-                </h2>
-
-                <div className="space-y-6">
-                  {artwork.details.map((detail, idx) => (
-                    <div
-                      key={detail.id}
-                      className="border border-[#2A2927] p-3 bg-[#111111] group cursor-pointer hover:border-[#C5A880]/60 transition-colors"
-                      onClick={() => setIsCloseUpOpen(true)}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-mono text-[#C5A880] tracking-widest uppercase">
-                          Detal {idx === 0 ? 'I' : idx === 1 ? 'II' : 'III'}
-                        </span>
-                        <span className="text-[10px] text-[#777] uppercase tracking-wider group-hover:text-[#C5A880] transition-colors">
-                          Przyjrzyj się bliżej →
-                        </span>
-                      </div>
-
-                      <div className="relative w-full aspect-[16/9] overflow-hidden bg-[#0B0B0B] mb-3">
-                        <Image
-                          src={detail.image}
-                          alt={detail.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 400px"
-                          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-
-                      <h3 className="font-serif-luxury text-base text-[#F2F0EA] mb-1 font-normal">
-                        „{detail.title}”
-                      </h3>
-                      <p className="text-xs text-[#AAA69D] leading-relaxed font-light">
-                        {detail.description}
-                      </p>
+                  <div className="grid grid-cols-2 gap-4 pt-2 text-xs border-t border-[#2A2927]/60">
+                    <div>
+                      <span className="text-[10px] uppercase tracking-widest text-[#777] block">
+                        Technika wykonania
+                      </span>
+                      <span className="text-[#F2F0EA] text-xs font-light mt-0.5 block font-serif-luxury italic">
+                        {artwork.medium.replace(/\s*\[.*?\]/, '')}
+                      </span>
                     </div>
-                  ))}
+                    <div>
+                      <span className="text-[10px] uppercase tracking-widest text-[#777] block">
+                        Format płótna
+                      </span>
+                      <span className="text-[#F2F0EA] text-xs font-light mt-0.5 block font-mono">
+                        {artwork.width} × {artwork.height} cm
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+
+                {/* 5. O DZIELE */}
+                <div className="space-y-2.5">
+                  <h2 className="text-[11px] uppercase tracking-[0.25em] text-[#C5A880] flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880]" />
+                    <span>O dziele</span>
+                  </h2>
+                  <p className="text-sm text-[#AAA69D] leading-relaxed font-light">
+                    {artwork.description}
+                  </p>
+                </div>
+
+                {/* 6. HISTORIA OBRAZU */}
+                {artwork.story && (
+                  <div className="space-y-4 border-t border-[#2A2927] pt-6">
+                    <h2 className="text-[11px] uppercase tracking-[0.25em] text-[#C5A880] flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880]" />
+                      <span>Historia obrazu</span>
+                    </h2>
+
+                    {artwork.story.origin && (
+                      <div className="text-xs space-y-1">
+                        <span className="text-[#888] uppercase tracking-wider block text-[10px]">
+                          Geneza i pracownia
+                        </span>
+                        <p className="text-[#AAA69D] leading-relaxed font-light">
+                          {artwork.story.origin}
+                        </p>
+                      </div>
+                    )}
+
+                    {artwork.story.meaning && (
+                      <div className="text-xs space-y-1">
+                        <span className="text-[#888] uppercase tracking-wider block text-[10px]">
+                          Kontekst artystyczny
+                        </span>
+                        <p className="text-[#AAA69D] leading-relaxed font-light">
+                          {artwork.story.meaning}
+                        </p>
+                      </div>
+                    )}
+
+                    {artwork.story.curatorialNote && (
+                      <div className="border-l-2 border-[#C5A880]/40 pl-3.5 py-1 mt-2 bg-[#111111]/30">
+                        <p className="font-serif-luxury text-sm italic text-[#AAA69D]">
+                          {artwork.story.curatorialNote}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 7. DETAIL STORY (STUDIUM DETALU) */}
+                {artwork.details && artwork.details.length > 0 && (
+                  <div className="space-y-5 border-t border-[#2A2927] pt-6">
+                    <h2 className="text-[11px] uppercase tracking-[0.25em] text-[#C5A880] flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
+                      <span>Studium detalu • Analiza kuratorska</span>
+                    </h2>
+
+                    <div className="space-y-5">
+                      {artwork.details.map((detail, idx) => (
+                        <div
+                          key={detail.id}
+                          className="border border-[#2A2927] p-3 bg-[#111111] group cursor-pointer hover:border-[#C5A880]/60 transition-colors"
+                          onClick={() => setIsCloseUpOpen(true)}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-mono text-[#C5A880] tracking-widest uppercase">
+                              Detal {idx === 0 ? 'I' : idx === 1 ? 'II' : 'III'}
+                            </span>
+                            <span className="text-[10px] text-[#777] uppercase tracking-wider group-hover:text-[#C5A880] transition-colors">
+                              Przyjrzyj się bliżej →
+                            </span>
+                          </div>
+
+                          <div className="relative w-full aspect-[16/9] overflow-hidden bg-[#0B0B0B] mb-3">
+                            <Image
+                              src={detail.image}
+                              alt={detail.title}
+                              fill
+                              unoptimized
+                              sizes="(max-width: 768px) 100vw, 400px"
+                              className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+
+                          <h3 className="font-serif-luxury text-base text-[#F2F0EA] mb-1 font-normal">
+                            „{detail.title}”
+                          </h3>
+                          <p className="text-xs text-[#AAA69D] leading-relaxed font-light">
+                            {detail.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </main>
@@ -394,3 +429,4 @@ export const ArtworkClientView: React.FC<ArtworkClientViewProps> = ({
     </div>
   );
 };
+

@@ -112,6 +112,7 @@ export const ArtistStudioSection: React.FC<ArtistStudioSectionProps> = ({
                   src={portrait}
                   alt={name}
                   fill
+                  unoptimized
                   className="object-cover grayscale"
                   referrerPolicy="no-referrer"
                 />

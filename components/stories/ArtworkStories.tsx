@@ -53,14 +53,19 @@ export const ArtworkStories: React.FC<ArtworkStoriesProps> = ({
             }}
           >
             <div>
-              <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0B0B0B] mb-6 border border-[#2A2927]/60">
+              <div
+                className="relative aspect-[16/10] w-full overflow-hidden bg-[#0B0B0B] mb-6 border border-[#2A2927]/60"
+                suppressHydrationWarning
+              >
                 <Image
                   src={art.thumbnail || art.image}
                   alt={art.title}
                   fill
+                  unoptimized
                   sizes="(max-width: 768px) 100vw, 450px"
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"
+                  suppressHydrationWarning
                 />
               </div>
 

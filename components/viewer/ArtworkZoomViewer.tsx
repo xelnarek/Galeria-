@@ -259,14 +259,15 @@ export const ArtworkZoomViewer: React.FC<ArtworkZoomViewerProps> = ({
             transition: isDragging ? 'none' : 'transform 0.2s ease-out',
             transformOrigin: 'center center',
           }}
-          className="relative w-[92vw] h-[72vh] max-w-5xl"
+          className="relative w-[94vw] h-[78vh] max-w-6xl"
         >
           <Image
             src={artwork.image}
             alt={artwork.title}
             fill
             priority
-            quality={95}
+            unoptimized
+            quality={98}
             sizes="100vw"
             className="object-contain pointer-events-none"
             referrerPolicy="no-referrer"
