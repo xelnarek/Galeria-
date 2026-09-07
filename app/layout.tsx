@@ -6,11 +6,15 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
+  minimumScale: 1,
+  userScalable: true,
+  viewportFit: 'cover',
 };
 
 export const metadata: Metadata = {
   title: 'Prywatna Galeria Obrazów',
   description: 'Cyfrowa wystawa sztuki i prywatna kolekcja obrazów stworzona jako wyjątkowy prezent.',
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -57,6 +61,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pl" className="dark">
+      <head>
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="Galeria" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Galeria" />
+      </head>
       <body className="bg-[#0B0B0B] text-[#F2F0EA] min-h-screen antialiased" suppressHydrationWarning>
         {children}
       </body>
