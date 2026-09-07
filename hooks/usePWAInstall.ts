@@ -37,6 +37,7 @@ export function usePWAInstall() {
     };
 
     const handleAppInstalled = () => {
+      console.log('✓ PWA installed successfully');
       setInstallPrompt(null);
     };
 
@@ -56,8 +57,11 @@ export function usePWAInstall() {
       installPrompt.prompt();
       const { outcome } = await installPrompt.userChoice;
       console.log(`User response to install prompt: ${outcome}`);
-    } catch {
-      // ignore
+      if (outcome === 'accepted') {
+        console.log('✓ PWA installation accepted');
+      }
+    } catch (err) {
+      console.error('Error during PWA installation:', err);
     } finally {
       setInstallPrompt(null);
     }
@@ -72,6 +76,3 @@ export function usePWAInstall() {
     showInstallPrompt: install,
   };
 }
-
-
-
