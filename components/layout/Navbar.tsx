@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { artistData } from '@/data/gallery-data';
 import { AmbientSound } from '@/components/audio/AmbientSound';
-import { Heart, Menu, X, Eye } from 'lucide-react';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { Heart, Menu, X, Eye, Download } from 'lucide-react';
 
 interface NavbarProps {
   onOpenExhibition?: () => void;
@@ -21,6 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const displayName = artistName || artistData.name;
+  const { canInstall, showInstallPrompt, isInstalled } = usePWAInstall();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -110,6 +112,15 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Subtle Controls */}
             <div className="flex items-center gap-3 pl-3 border-l border-[#2A2927]">
+              {canInstall && (
+                <button
+                  onClick={showInstallPrompt}
+                  className="p-1.5 text-[#AAA69D] hover:text-[#C5A880] transition-colors"
+                  title="Zainstaluj galerię jako aplikację"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                </button>
+              )}
               <AmbientSound />
               {favoritesCount > 0 && (
                 <Link
@@ -246,7 +257,23 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Bottom utilities in mobile menu */}
-          <div className="border-t border-[#2A2927] pt-5 flex flex-col gap-3">
+          <div className="border-t border-[#2A2927] pt-5 flex flex-col gap-4">
+            {canInstall && (
+              <button
+                onClick={showInstallPrompt}
+                className="w-full flex items-center justify-between border border-[#C5A880]/40 bg-[#161616]/40 px-4 py-2.5 rounded-lg text-[#AAA69D] hover:text-[#F2F0EA] transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <Download className="w-4 h-4 text-[#C5A880]" />
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs uppercase tracking-wider font-medium text-[#F2F0EA]">Instaluj aplikację</span>
+                    <span className="text-[10px] text-[#777]">Szybszy dostęp z ekranu głównego</span>
+                  </div>
+                </div>
+                <div className="w-1.5 h-1.5 rounded-full bg-[#C5A880] animate-pulse" />
+              </button>
+            )}
+
             <div className="flex items-center justify-between">
               <span className="text-xs text-[#AAA69D]">Tło dźwiękowe:</span>
               <AmbientSound />

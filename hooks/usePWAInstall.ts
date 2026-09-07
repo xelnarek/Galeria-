@@ -1,67 +1,35 @@
 'use client';
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
-}
-
-function subscribeStandalone(callback: () => void) {
-  if (typeof window === 'undefined') return () => {};
-  const mql = window.matchMedia('(display-mode: standalone)');
-  mql.addEventListener('change', callback);
-  return () => mql.removeEventListener('change', callback);
-}
-
-function getStandaloneSnapshot(): boolean {
-  if (typeof window === 'undefined') return false;
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as unknown as { standalone?: boolean }).standalone === true
-  );
-}
-
-function getServerStandaloneSnapshot(): boolean {
-  return false;
-}
-
-function subscribeNoop() {
-  return () => {};
-}
-
-function getIOSSnapshot(): boolean {
-  if (typeof navigator === 'undefined') return false;
-  return /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
-}
-
-function getServerIOSSnapshot(): boolean {
-  return false;
-}
+import { useState, useEffect } from 'react';
 
 export function usePWAInstall() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-
-  const isInstalled = useSyncExternalStore(
-    subscribeStandalone,
-    getStandaloneSnapshot,
-    getServerStandaloneSnapshot
-  );
-
-  const isIOS = useSyncExternalStore(
-    subscribeNoop,
-    getIOSSnapshot,
-    getServerIOSSnapshot
-  );
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
+    // Initial check for standalone mode
+    if (typeof window !== 'undefined') {
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        setTimeout(() => setIsInstalled(true), 0);
+      }
+
+      // Check for iOS
+      const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      setIsIOS(isIOSDevice);
+    }
+
+    const handleBeforeInstallPrompt = (e: any) => {
+      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      // Stash the event so it can be triggered later.
+      setInstallPrompt(e);
     };
 
     const handleAppInstalled = () => {
-      setDeferredPrompt(null);
+      setInstallPrompt(null);
+      setIsInstalled(true);
+      console.log('PWA was installed');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -74,20 +42,20 @@ export function usePWAInstall() {
   }, []);
 
   const install = async () => {
-    if (!deferredPrompt) return false;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setDeferredPrompt(null);
-      return true;
-    }
-    return false;
+    if (!installPrompt) return;
+
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    console.log(`User response to install prompt: ${outcome}`);
+    setInstallPrompt(null);
   };
 
   return {
-    isInstallable: !!deferredPrompt,
+    isInstallable: !!installPrompt,
+    canInstall: !!installPrompt, // Keep for backward compatibility with my recent edits
     isInstalled,
     isIOS,
     install,
+    showInstallPrompt: install, // Keep for backward compatibility with my recent edits
   };
 }

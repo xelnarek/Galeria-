@@ -9,9 +9,12 @@ export const AmbientSound: React.FC = () => {
   const gainNodeRef = useRef<GainNode | null>(null);
   const oscillatorsRef = useRef<OscillatorNode[]>([]);
 
+  const [volume, setVolume] = useState(0.025);
+
   const stopAudio = () => {
     if (gainNodeRef.current && audioCtxRef.current) {
-      gainNodeRef.current.gain.setTargetAtTime(0.0001, audioCtxRef.current.currentTime, 0.8);
+      const currentVal = gainNodeRef.current.gain.value;
+      gainNodeRef.current.gain.setTargetAtTime(0.0001, audioCtxRef.current.currentTime, 0.4);
       setTimeout(() => {
         oscillatorsRef.current.forEach((osc) => {
           try {
@@ -24,25 +27,24 @@ export const AmbientSound: React.FC = () => {
           audioCtxRef.current.close();
           audioCtxRef.current = null;
         }
-      }, 900);
+      }, 500);
     }
     setIsPlaying(false);
   };
 
   const startAudio = () => {
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       const ctx = new AudioCtx();
       audioCtxRef.current = ctx;
 
       const masterGain = ctx.createGain();
-      // Very subtle, quiet atmospheric room drone
       masterGain.gain.setValueAtTime(0.0001, ctx.currentTime);
-      masterGain.gain.exponentialRampToValueAtTime(0.025, ctx.currentTime + 3);
+      masterGain.gain.exponentialRampToValueAtTime(volume, ctx.currentTime + 2);
       masterGain.connect(ctx.destination);
       gainNodeRef.current = masterGain;
-
-      // Warm contemplative resonant tones (A2 110Hz, E3 165Hz, C#3 138.6Hz)
+      
+      // Warm contemplative resonant tones
       const freqs = [110, 164.81, 220, 329.63];
       const oscs: OscillatorNode[] = [];
 
@@ -57,7 +59,6 @@ export const AmbientSound: React.FC = () => {
         osc.type = index % 2 === 0 ? 'sine' : 'triangle';
         osc.frequency.setValueAtTime(freq, ctx.currentTime);
 
-        // Subtle slow frequency drifting
         const lfo = ctx.createOscillator();
         const lfoGain = ctx.createGain();
         lfo.frequency.setValueAtTime(0.1 + index * 0.05, ctx.currentTime);
@@ -87,6 +88,13 @@ export const AmbientSound: React.FC = () => {
     }
   };
 
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+    if (gainNodeRef.current && audioCtxRef.current) {
+      gainNodeRef.current.gain.setTargetAtTime(newVolume, audioCtxRef.current.currentTime, 0.2);
+    }
+  };
+
   const toggleSound = () => {
     if (isPlaying) {
       stopAudio();
@@ -102,24 +110,41 @@ export const AmbientSound: React.FC = () => {
   }, []);
 
   return (
-    <button
-      id="ambient-sound-toggle-btn"
-      onClick={toggleSound}
-      className="inline-flex items-center gap-2 border border-[#2A2927] hover:border-[#C5A880] px-3 py-1.5 rounded-full text-xs text-[#AAA69D] hover:text-[#F2F0EA] transition-colors uppercase tracking-wider"
-      title={isPlaying ? 'Wycisz ambient wystawy' : 'Włącz subtelne tło dźwiękowe wystawy'}
-      aria-label={isPlaying ? 'Wycisz dźwięk wystawy' : 'Włącz dźwięk wystawy'}
-    >
-      {isPlaying ? (
-        <>
-          <Volume2 className="w-3.5 h-3.5 text-[#C5A880] animate-pulse" />
-          <span className="hidden sm:inline">Dźwięk: włączony</span>
-        </>
-      ) : (
-        <>
-          <VolumeX className="w-3.5 h-3.5 text-[#AAA69D]" />
-          <span className="hidden sm:inline">Dźwięk: wyciszony</span>
-        </>
+    <div className="flex items-center gap-3">
+      <button
+        id="ambient-sound-toggle-btn"
+        onClick={toggleSound}
+        className="inline-flex items-center gap-2 border border-[#2A2927] hover:border-[#C5A880] px-3 py-1.5 rounded-full text-xs text-[#AAA69D] hover:text-[#F2F0EA] transition-colors uppercase tracking-wider group"
+        title={isPlaying ? 'Wycisz ambient wystawy' : 'Włącz subtelne tło dźwiękowe wystawy'}
+        aria-label={isPlaying ? 'Wycisz dźwięk wystawy' : 'Włącz dźwięk wystawy'}
+      >
+        {isPlaying ? (
+          <>
+            <Volume2 className="w-3.5 h-3.5 text-[#C5A880] animate-pulse group-hover:scale-110 transition-transform" />
+            <span className="hidden sm:inline">Dźwięk: on</span>
+          </>
+        ) : (
+          <>
+            <VolumeX className="w-3.5 h-3.5 text-[#AAA69D]" />
+            <span className="hidden sm:inline">Dźwięk: off</span>
+          </>
+        )}
+      </button>
+
+      {isPlaying && (
+        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-500">
+          <input
+            type="range"
+            min="0"
+            max="0.08"
+            step="0.005"
+            value={volume}
+            onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+            className="w-16 h-1 bg-[#2A2927] rounded-full appearance-none cursor-pointer accent-[#C5A880]"
+            aria-label="Głośność tła"
+          />
+        </div>
       )}
-    </button>
+    </div>
   );
 };
