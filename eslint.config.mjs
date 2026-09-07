@@ -1,5 +1,6 @@
 import { defineConfig } from "eslint/config";
 import next from "eslint-config-next";
+import firebaseRulesPlugin from "@firebase/eslint-plugin-security-rules";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,4 +14,6 @@ export default defineConfig([
   {
     extends: [...next],
   },
+  firebaseRulesPlugin.configs["flat/recommended"],
 ]);
+

@@ -1,0 +1,93 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidArtwork(data) {
+      return data.keys().hasAll(['id', 'slug', 'title', 'image', 'order'])
+        && data.id is string && data.id.size() > 0 && data.id.size() <= 128
+        && data.slug is string && data.slug.size() > 0 && data.slug.size() <= 200
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 300
+        && data.image is string && data.image.size() > 0 && data.image.size() <= 2000
+        && data.order is number
+        && (!('status' in data) || (data.status is string && (data.status == 'published' || data.status == 'draft' || data.status == 'hidden')))
+        && (!('year' in data) || (data.year is string && data.year.size() <= 50))
+        && (!('category' in data) || (data.category is string && data.category.size() <= 100))
+        && (!('medium' in data) || (data.medium is string && data.medium.size() <= 200))
+        && (!('width' in data) || (data.width is number))
+        && (!('height' in data) || (data.height is number))
+        && (!('thumbnail' in data) || (data.thumbnail is string && data.thumbnail.size() <= 2000))
+        && (!('description' in data) || (data.description is string && data.description.size() <= 5000))
+        && (!('featured' in data) || (data.featured is bool))
+        && (!('exhibitionOrder' in data) || (data.exhibitionOrder is number))
+        && (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 100))
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
+    }
+
+    function isValidArtist(data) {
+      return data.keys().hasAll(['name', 'biography', 'statement', 'portrait'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.biography is string && data.biography.size() <= 5000
+        && data.statement is string && data.statement.size() <= 5000
+        && data.portrait is string && data.portrait.size() <= 2000
+        && (!('tagline' in data) || (data.tagline is string && data.tagline.size() <= 500))
+        && (!('yearsActive' in data) || (data.yearsActive is string && data.yearsActive.size() <= 50));
+    }
+
+    function isValidCollection(data) {
+      return data.keys().hasAll(['title', 'subtitle', 'description'])
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.subtitle is string && data.subtitle.size() <= 500
+        && data.description is string && data.description.size() <= 5000
+        && (!('quote' in data) || (data.quote is string && data.quote.size() <= 1000))
+        && (!('giftDedication' in data) || (data.giftDedication is string && data.giftDedication.size() <= 2000))
+        && (!('curatorNote' in data) || (data.curatorNote is string && data.curatorNote.size() <= 2000))
+        && (!('coverArtworkId' in data) || (data.coverArtworkId is string && data.coverArtworkId.size() <= 100));
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Artworks Collection
+    match /artworks/{artworkId} {
+      allow read: if true;
+      allow create: if isValidId(artworkId) && isValidArtwork(incoming());
+      allow update: if isValidId(artworkId) && isValidArtwork(incoming()) && incoming().id == existing().id;
+      allow delete: if isValidId(artworkId);
+    }
+
+    // Metadata Collection (Artist & Collection Info)
+    match /metadata/{docId} {
+      allow read: if true;
+      allow create, update: if isValidId(docId) && (
+        (docId == 'artist' && isValidArtist(incoming())) ||
+        (docId == 'collection' && isValidCollection(incoming()))
+      );
+      allow delete: if false;
+    }
+
+    // Test connection document
+    match /test/connection {
+      allow read, write: if true;
+    }
+  }
+}
