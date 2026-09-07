@@ -15,11 +15,12 @@ export function useGalleryData(options: UseGalleryDataOptions = {}) {
   const { forStudio = false, includeDrafts = false, includeHidden = false } = options;
 
   const [artworks, setArtworks] = useState<Artwork[]>(() => {
+    if (!Array.isArray(artworksData)) return [];
     if (forStudio) return artworksData;
     return artworksData.filter((a) => (a.status || 'published') === 'published');
   });
-  const [artist, setArtist] = useState<Artist>(artistData);
-  const [collection, setCollection] = useState<CollectionInfo>(collectionData);
+  const [artist, setArtist] = useState<Artist>(artistData || {});
+  const [collection, setCollection] = useState<CollectionInfo>(collectionData || {});
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const fetchTriggerRef = useRef<() => Promise<void>>(async () => {});
@@ -38,9 +39,9 @@ export function useGalleryData(options: UseGalleryDataOptions = {}) {
         ]);
 
         if (isSubscribed) {
-          setArtworks(arts);
-          setArtist(artst);
-          setCollection(col);
+          setArtworks(Array.isArray(arts) ? arts : []);
+          setArtist(artst || artistData || {});
+          setCollection(col || collectionData || {});
           setIsLoading(false);
         }
       } catch (err) {
@@ -69,7 +70,9 @@ export function useGalleryData(options: UseGalleryDataOptions = {}) {
     await fetchTriggerRef.current();
   }, []);
 
-  const featuredArtwork = artworks.find((a) => a.featured) || artworks[0] || null;
+  const featuredArtwork = Array.isArray(artworks)
+    ? (artworks.find((a) => a.featured) || artworks[0] || null)
+    : null;
 
   return {
     artworks,

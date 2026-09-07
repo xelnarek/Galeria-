@@ -47,6 +47,8 @@ export const MuseumIntroPreloader: React.FC<MuseumIntroPreloaderProps> = ({
   useEffect(() => {
     if (!isMounted || isAlreadySeen || isDismissed) return;
 
+    let tInner: NodeJS.Timeout;
+
     const t1 = setTimeout(() => setStage('title'), 200);
     const t2 = setTimeout(() => setStage('artist'), 1000);
     const t3 = setTimeout(() => setStage('curatorial'), 2000);
@@ -57,7 +59,7 @@ export const MuseumIntroPreloader: React.FC<MuseumIntroPreloaderProps> = ({
       } catch {
         // ignore
       }
-      setTimeout(() => {
+      tInner = setTimeout(() => {
         setIsDismissed(true);
         if (onComplete) onComplete();
       }, 900);
@@ -68,6 +70,7 @@ export const MuseumIntroPreloader: React.FC<MuseumIntroPreloaderProps> = ({
       clearTimeout(t2);
       clearTimeout(t3);
       clearTimeout(t4);
+      if (tInner) clearTimeout(tInner);
     };
   }, [isMounted, isAlreadySeen, isDismissed, onComplete]);
 

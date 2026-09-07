@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Artist, CollectionInfo } from '@/types/gallery';
 import { Feather, Upload, Check, AlertCircle } from 'lucide-react';
@@ -34,6 +34,15 @@ export const ArtistStudioSection: React.FC<ArtistStudioSectionProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const successTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handlePortraitUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,7 +79,10 @@ export const ArtistStudioSection: React.FC<ArtistStudioSectionProps> = ({
       });
 
       setSavedSuccess(true);
-      setTimeout(() => setSavedSuccess(false), 3000);
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+      successTimeoutRef.current = setTimeout(() => setSavedSuccess(false), 3000);
     } catch (err: any) {
       setErrorMsg(err.message || 'Wystąpił błąd podczas zapisywania.');
     } finally {

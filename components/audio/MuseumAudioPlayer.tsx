@@ -24,10 +24,44 @@ export const MuseumAudioPlayer: React.FC<MuseumAudioPlayerProps> = ({
   const masterGainRef = useRef<GainNode | null>(null);
   const oscillatorsRef = useRef<OscillatorNode[]>([]);
   const noiseNodeRef = useRef<AudioNode | null>(null);
+  const cleanupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const cleanupNodes = useCallback(() => {
+    // Clear scheduled cleanup timeouts
+    if (cleanupTimeoutRef.current) {
+      clearTimeout(cleanupTimeoutRef.current);
+      cleanupTimeoutRef.current = null;
+    }
+
+    // Stop and disconnect all active oscillators
+    oscillatorsRef.current.forEach((osc) => {
+      try {
+        osc.stop();
+        osc.disconnect();
+      } catch {
+        // ignore
+      }
+    });
+    oscillatorsRef.current = [];
+
+    // Stop and disconnect noise node
+    if (noiseNodeRef.current) {
+      try {
+        (noiseNodeRef.current as AudioBufferSourceNode).stop();
+        noiseNodeRef.current.disconnect();
+      } catch {
+        // ignore
+      }
+      noiseNodeRef.current = null;
+    }
+  }, []);
 
   // Initialize Web Audio API generative soothing museum soundscape
   const initWebAudio = useCallback(() => {
     try {
+      // Clean up previous active nodes to prevent overlapping leaks
+      cleanupNodes();
+
       if (!audioCtxRef.current) {
         const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         if (!AudioContextClass) {
@@ -105,17 +139,22 @@ export const MuseumAudioPlayer: React.FC<MuseumAudioPlayerProps> = ({
     } catch {
       setIsAudioSupported(false);
     }
-  }, []);
+  }, [cleanupNodes]);
 
   const stopWebAudio = useCallback(() => {
     if (audioCtxRef.current && masterGainRef.current) {
       const ctx = audioCtxRef.current;
+      masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, ctx.currentTime);
       masterGainRef.current.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
     }
   }, []);
 
   const toggleSoundtrack = () => {
     if (!isPlaying) {
+      if (cleanupTimeoutRef.current) {
+        clearTimeout(cleanupTimeoutRef.current);
+        cleanupTimeoutRef.current = null;
+      }
       initWebAudio();
       if (audioCtxRef.current && masterGainRef.current) {
         const ctx = audioCtxRef.current;
@@ -128,6 +167,10 @@ export const MuseumAudioPlayer: React.FC<MuseumAudioPlayerProps> = ({
       stopWebAudio();
       setIsPlaying(false);
       setMode('silence');
+      // Clean up sound synthesis nodes completely after linear fade finishes (1.2s)
+      cleanupTimeoutRef.current = setTimeout(() => {
+        cleanupNodes();
+      }, 1300);
     }
   };
 
@@ -142,14 +185,10 @@ export const MuseumAudioPlayer: React.FC<MuseumAudioPlayerProps> = ({
   // Clean up on unmount
   useEffect(() => {
     return () => {
-      oscillatorsRef.current.forEach((osc) => {
-        try {
-          osc.stop();
-          osc.disconnect();
-        } catch {
-          // ignore
-        }
-      });
+      if (cleanupTimeoutRef.current) {
+        clearTimeout(cleanupTimeoutRef.current);
+      }
+      cleanupNodes();
       if (audioCtxRef.current) {
         try {
           audioCtxRef.current.close();
@@ -158,7 +197,7 @@ export const MuseumAudioPlayer: React.FC<MuseumAudioPlayerProps> = ({
         }
       }
     };
-  }, []);
+  }, [cleanupNodes]);
 
   if (!isMounted || !isAudioSupported) return null;
 

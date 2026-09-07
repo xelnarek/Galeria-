@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && rm -rf dist && cp -r out dist",
+    "build": "NODE_ENV=production next build && rm -rf dist && cp -r out dist",
     "lint": "eslint .",
     "clean": "next clean"
   },
@@ -14,7 +14,6 @@
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "firebase": "^12.18.0",
     "lucide-react": "^0.553.0",
     "motion": "^12.23.24",
     "next": "^15.4.9",

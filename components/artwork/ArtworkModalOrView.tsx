@@ -46,7 +46,17 @@ export const ArtworkModalOrView: React.FC<ArtworkModalOrViewProps> = ({
   const [copied, setCopied] = useState(false);
   const [direction, setDirection] = useState(1);
   const touchStartX = useRef<number | null>(null);
+  const copiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { isPortrait } = useOrientation();
+
+  // Clean up copied timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (copiedTimeoutRef.current) {
+        clearTimeout(copiedTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Lock body scroll while modal is open
   useEffect(() => {
@@ -120,7 +130,10 @@ export const ArtworkModalOrView: React.FC<ArtworkModalOrViewProps> = ({
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2400);
+      if (copiedTimeoutRef.current) {
+        clearTimeout(copiedTimeoutRef.current);
+      }
+      copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2400);
     } catch {
       // Ignore
     }

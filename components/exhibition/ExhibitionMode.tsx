@@ -193,6 +193,15 @@ export const ExhibitionMode: React.FC<ExhibitionModeProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose, handleNext, handlePrevious, resetControlsTimeout]);
 
+  // Clear controls hide timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Autoplay loop (strictly user-initiated, contemplative museum pace)
   useEffect(() => {
     if (isPlaying && !isFinished && !showSilenceInterlude) {
