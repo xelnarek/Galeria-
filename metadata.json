@@ -1,0 +1,6 @@
+{
+  "name": "Prywatna Galeria Obrazów",
+  "description": "Cyfrowa wystawa sztuki i prywatna kolekcja obrazów stworzona jako wyjątkowy prezent.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

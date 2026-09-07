@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
+
+@layer base {
+  :root {
+    --bg-primary: #0B0B0B;
+    --bg-surface: #111111;
+    --bg-elevated: #161616;
+    --text-primary: #F2F0EA;
+    --text-secondary: #AAA69D;
+    --border-subtle: #2A2927;
+    --accent-gold: #C5A880;
+  }
+
+  html {
+    background-color: #0B0B0B;
+    color: #F2F0EA;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #0B0B0B;
+    color: #F2F0EA;
+    overflow-x: hidden;
+  }
+
+  /* Custom typography utility classes */
+  .font-serif-luxury {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+
+  .font-sans-clean {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  /* Selection styling */
+  ::selection {
+    background-color: #2A2927;
+    color: #F2F0EA;
+  }
+
+  /* Custom scrollbar for gallery */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0B0B0B;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2A2927;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #C5A880;
+  }
+}
+
+/* Subtle museum lighting & frame effects */
+.gallery-wall-gradient {
+  background: radial-gradient(circle at 50% 30%, #161616 0%, #0B0B0B 75%);
+}
+
+.artwork-shadow {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
+}
+
+.artwork-inner-border {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Cinematic Slow Entrance */
+@keyframes cinematicEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(1.015);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-cinematic {
+  animation: cinematicEntrance 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Button Underline Hover Effect */
+.entrance-link-line {
+  display: block;
+  width: 48px;
+  height: 1px;
+  background-color: #C5A880;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+}
+
+.group:hover .entrance-link-line {
+  width: 72px;
+  background-color: #F2F0EA;
+}
+
